@@ -17,6 +17,8 @@ export default function Home() {
   const [loadingQ, setLoadingQ] = useState(false);
   const [loadingG, setLoadingG] = useState(false);
   const [revealed, setRevealed] = useState<string | null>(null);
+  const [invalidWarning, setInvalidWarning] = useState(false);
+  const [debugCountry, setDebugCountry] = useState<string | null>(null);
   const questionRef = useRef<HTMLInputElement>(null);
   const guessRef = useRef<HTMLInputElement>(null);
 
@@ -30,9 +32,11 @@ export default function Home() {
     setQuestions([]);
     setGuesses([]);
     setRevealed(null);
+    setInvalidWarning(false);
     const res = await fetch("/api/start", { method: "POST" });
     const data = await res.json();
     setGameId(data.gameId);
+    setDebugCountry(data.country ?? null);
     setLoadingQ(false);
     setTimeout(() => questionRef.current?.focus(), 100);
   }
@@ -49,6 +53,13 @@ export default function Home() {
       body: JSON.stringify({ gameId, question }),
     });
     const data = await res.json();
+    if (data.answer === "INVALIDA") {
+      setInvalidWarning(true);
+      setLoadingQ(false);
+      setTimeout(() => questionRef.current?.focus(), 100);
+      return;
+    }
+    setInvalidWarning(false);
     setQuestions((prev) => [...prev, { question, answer: data.answer ?? "Error" }]);
     setLoadingQ(false);
     setTimeout(() => questionRef.current?.focus(), 100);
@@ -103,22 +114,30 @@ export default function Home() {
 
   const playing = !!gameId && !gameOver;
 
-  return (
-    <main className="flex flex-col items-center min-h-screen px-4 py-16 gap-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight">🌍 Countrly</h1>
-        <p className="text-slate-400 mt-2 text-sm">Adivina el país secreto haciendo preguntas de Sí o No</p>
-      </div>
-
-      {!gameId && !gameOver && (
+  if (!gameId && !gameOver) {
+    return (
+      <main className="flex flex-col items-center justify-center min-h-screen px-4 gap-10">
+        <div className="text-center space-y-4">
+          <h1 className="text-8xl font-bold tracking-tight">🌍 Countrly</h1>
+          <p className="text-slate-400 text-lg">Adivina el país secreto haciendo preguntas de Sí o No</p>
+        </div>
         <button
           onClick={startGame}
           disabled={loadingQ}
-          className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-xl transition"
+          className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white font-semibold px-8 py-4 rounded-xl transition text-lg"
         >
           {loadingQ ? "Cargando..." : "Empezar partida"}
         </button>
-      )}
+      </main>
+    );
+  }
+
+  return (
+    <main className="flex flex-col items-center min-h-screen px-4 py-16 gap-8">
+<div className="text-center">
+        <h1 className="text-4xl font-bold tracking-tight">🌍 Countrly</h1>
+        <p className="text-slate-400 mt-2 text-sm">Adivina el país secreto haciendo preguntas de Sí o No</p>
+      </div>
 
       {gameOver && (
         <div className="text-center space-y-3">
@@ -189,7 +208,7 @@ export default function Home() {
                 <input
                   ref={questionRef}
                   value={questionInput}
-                  onChange={(e) => setQuestionInput(e.target.value)}
+                  onChange={(e) => { setQuestionInput(e.target.value); setInvalidWarning(false); }}
                   onKeyDown={(e) => e.key === "Enter" && askQuestion()}
                   placeholder="¿Es asiático? ¿Tiene costa? ..."
                   disabled={loadingQ || questionsLeft <= 0}
@@ -203,6 +222,15 @@ export default function Home() {
                   {loadingQ ? "..." : "→"}
                 </button>
               </div>
+              {invalidWarning && (
+                <div className="flex items-start gap-2 bg-amber-950/60 border border-amber-600/40 rounded-xl px-4 py-3 text-amber-400 text-sm">
+                  <span className="mt-0.5">⚠️</span>
+                  <span>
+                    <span className="font-semibold">Pregunta no válida.</span> Solo puedes preguntar sobre características del país, no sobre su nombre.{" "}
+                    <span className="text-amber-300">Ej: ¿Está en Asia?</span>
+                  </span>
+                </div>
+              )}
               {questions.length > 0 && (
                 <ul className="space-y-2 max-h-96 overflow-y-auto">
                   {[...questions].reverse().map((qa, i) => (

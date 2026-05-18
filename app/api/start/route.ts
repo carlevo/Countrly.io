@@ -22,5 +22,5 @@ export async function POST() {
   }
 
   const gameId = createGame(data.nombre);
-  return NextResponse.json({ gameId });
+  return NextResponse.json({ gameId, country: data.nombre });
 }

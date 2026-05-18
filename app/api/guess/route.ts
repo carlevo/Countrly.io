@@ -13,7 +13,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Partida no encontrada o expirada" }, { status: 404 });
   }
 
-  const correct = guess.trim().toLowerCase() === country.toLowerCase();
+  const normalize = (s: string) =>
+    s.trim().toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
+
+  const correct = normalize(guess) === normalize(country);
   if (correct) endGame(gameId);
 
   return NextResponse.json({ correct, country: correct ? country : undefined });
