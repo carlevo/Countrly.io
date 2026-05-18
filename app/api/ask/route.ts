@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
   }
 
-  const country = getCountry(gameId);
+  const country = await getCountry(gameId);
   if (!country) {
     return NextResponse.json({ error: "Partida no encontrada o expirada" }, { status: 404 });
   }

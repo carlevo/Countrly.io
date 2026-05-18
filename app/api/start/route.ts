@@ -8,7 +8,6 @@ const supabase = createClient(
 );
 
 export async function POST() {
-  // Los IDs van de 1 a 224 (SERIAL tras TRUNCATE RESTART IDENTITY)
   const randomId = Math.floor(Math.random() * 224) + 1;
 
   const { data, error } = await supabase
@@ -21,6 +20,6 @@ export async function POST() {
     return NextResponse.json({ error: "No se pudo obtener un país" }, { status: 500 });
   }
 
-  const gameId = createGame(data.nombre);
-  return NextResponse.json({ gameId, country: data.nombre });
+  const gameId = await createGame(data.nombre);
+  return NextResponse.json({ gameId });
 }

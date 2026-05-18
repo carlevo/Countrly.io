@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Falta gameId" }, { status: 400 });
   }
 
-  const country = endGame(gameId);
+  const country = await endGame(gameId);
   if (!country) {
     return NextResponse.json({ error: "Partida no encontrada" }, { status: 404 });
   }

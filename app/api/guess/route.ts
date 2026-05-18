@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
   }
 
-  const country = getCountry(gameId);
+  const country = await getCountry(gameId);
   if (!country) {
     return NextResponse.json({ error: "Partida no encontrada o expirada" }, { status: 404 });
   }
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     s.trim().toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
 
   const correct = normalize(guess) === normalize(country);
-  if (correct) endGame(gameId);
+  if (correct) await endGame(gameId);
 
   return NextResponse.json({ correct, country: correct ? country : undefined });
 }

@@ -18,7 +18,6 @@ export default function Home() {
   const [loadingG, setLoadingG] = useState(false);
   const [revealed, setRevealed] = useState<string | null>(null);
   const [invalidWarning, setInvalidWarning] = useState(false);
-  const [debugCountry, setDebugCountry] = useState<string | null>(null);
   const questionRef = useRef<HTMLInputElement>(null);
   const guessRef = useRef<HTMLInputElement>(null);
 
@@ -36,7 +35,6 @@ export default function Home() {
     const res = await fetch("/api/start", { method: "POST" });
     const data = await res.json();
     setGameId(data.gameId);
-    setDebugCountry(data.country ?? null);
     setLoadingQ(false);
     setTimeout(() => questionRef.current?.focus(), 100);
   }
